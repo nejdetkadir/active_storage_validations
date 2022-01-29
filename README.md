@@ -113,8 +113,8 @@ class User < ApplicationRecord
   validates :avatar, aspect_ratio: :square
   validates :photo, aspect_ratio: :landscape
 
-  # you can also pass dynamic aspect ratio, like :is_4_3, :is_16_9, etc
-  validates :photos, aspect_ratio: :is_4_3
+  # you can also pass dynamic aspect ratio
+  validates :photos, aspect_ratio: { with: ["16:9", "4:3"] }
 end
 ```
 
@@ -145,6 +145,7 @@ en:
       aspect_ratio_not_landscape: "must be a landscape image"
       aspect_ratio_is_not: "must have an aspect ratio of %{aspect_ratio}"
       aspect_ratio_unknown: "has an unknown aspect ratio"
+      aspect_ratio_is_not_match_any_ratio: "must have an valid aspect ratio"
 ```
 
 In some cases, Active Storage Validations provides variables to help you customize messages:
