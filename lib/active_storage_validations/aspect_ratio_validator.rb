@@ -12,10 +12,9 @@ module ActiveStorageValidations
       super(options)
     end
 
-
     def check_validity!
       return true if AVAILABLE_CHECKS.any? { |argument| options.key?(argument) }
-      raise ArgumentError, 'You must pass "aspect_ratio: :OPTION" option to the validator'
+      raise ArgumentError, 'You must pass "aspect_ratio: { with: [] }" option to the validator'
     end
 
     if Rails.gem_version >= Gem::Version.new('6.0.0')
@@ -51,9 +50,7 @@ module ActiveStorageValidations
       end
     end
 
-
     private
-
 
     def is_valid?(record, attribute, metadata)
       if metadata[:width].to_i <= 0 || metadata[:height].to_i <= 0
@@ -75,13 +72,12 @@ module ActiveStorageValidations
         add_error(record, attribute, :aspect_ratio_not_landscape)
 
       else
-        if options[:with] =~ /is\_(\d*)\_(\d*)/
-          x = $1.to_i
-          y = $2.to_i
-
-          return true if (x.to_f / y).round(PRECISION) == (metadata[:width].to_f / metadata[:height]).round(PRECISION)
-
-          add_error(record, attribute, :aspect_ratio_is_not, "#{x}x#{y}")
+        if options[:with].is_a?(Array)
+          if options[:with].to_a.map { |ratio| valid_ratio?(ratio, metadata) }.all?(false)
+            add_error(record, attribute, :aspect_ratio_is_not_match_any_ratio)
+          else
+            return true
+          end
         else
           add_error(record, attribute, :aspect_ratio_unknown)
         end
@@ -89,12 +85,19 @@ module ActiveStorageValidations
       false
     end
 
-
     def add_error(record, attribute, type, interpolate = options[:with])
       key = options[:message].presence || type
       return if record.errors.added?(attribute, key)
       record.errors.add(attribute, key, aspect_ratio: interpolate)
     end
 
+    def valid_ratio?(ratio, metadata)
+      ratio = ratio.split(':')
+      (ratio[0].to_f / ratio[1].to_i).round(PRECISION) == file_aspect_ratio(metadata)
+    end
+
+    def file_aspect_ratio(metadata)
+      (metadata[:width].to_f / metadata[:height].to_i).round(PRECISION)
+    end
   end
 end
