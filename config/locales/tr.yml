@@ -20,3 +20,4 @@ tr:
       aspect_ratio_not_landscape: "yatay bir imaj olmalı"
       aspect_ratio_is_not: "%{aspect_ratio} en boy oranına sahip olmalı"
       aspect_ratio_unknown: "bilinmeyen en boy oranı"
+      aspect_ratio_is_not_match_any_ratio: "geçerli bir en boy oranına sahip olmalı"
